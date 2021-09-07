@@ -4,31 +4,10 @@
 import * as React from 'react';
 import {useLocalStorageState} from '../utils';
 
-function Board({squares, setSquares}) {
-  // - nextValue ('X' or 'O')
-  const nextValue = calculateNextValue(squares);
-
-  // - winner ('X', 'O', or null)
-  const winner = calculateWinner(squares);
-
-  // - status (`Winner: ${winner}`, `Scratch: Cat's game`, or `Next player: ${nextValue}`)
-  const status = calculateStatus(winner, squares, nextValue);
-
-  // This is the function your square click handler will call. `square` should
-  // be an index. So if they click the center square, this will be `4`.
-  function selectSquare(square) {
-    if (winner || squares[square]) {
-      return;
-    }
-
-    const squareCopy = [...squares];
-    squareCopy[square] = nextValue;
-    setSquares(squareCopy);
-  }
-
+function Board({squares, onSelect}) {
   function renderSquare(i) {
     return (
-      <button className="square" onClick={() => selectSquare(i)}>
+      <button className="square" onClick={() => onSelect(i)}>
         {squares[i]}
       </button>
     );
@@ -36,8 +15,6 @@ function Board({squares, setSquares}) {
 
   return (
     <div>
-      {/* 🐨 put the status in the div below */}
-      <div className="status">{status}</div>
       <div className="board-row">
         {renderSquare(0)}
         {renderSquare(1)}
@@ -64,15 +41,31 @@ function Game() {
 
   const [currentStep, setCurrentStep] = useLocalStorageState('currentStep', 0);
 
-  /**
-   * Function to add a new board
-   * @param {Array} squares
-   */
-  function setSquares(squares) {
+  const currentSquares = boards[currentStep];
+
+  // - nextValue ('X' or 'O')
+  const nextValue = calculateNextValue(currentSquares);
+
+  // - winner ('X', 'O', or null)
+  const winner = calculateWinner(currentSquares);
+
+  // - status (`Winner: ${winner}`, `Scratch: Cat's game`, or `Next player: ${nextValue}`)
+  const status = calculateStatus(winner, currentSquares, nextValue);
+
+  // This is the function your square click handler will call. `square` should
+  // be an index. So if they click the center square, this will be `4`.
+  function selectSquare(square) {
+    if (winner || currentSquares[square]) {
+      return;
+    }
+
+    const squaresCopy = [...currentSquares];
+    squaresCopy[square] = nextValue;
+
     setCurrentStep(prevStep => prevStep + 1);
     setBoards(prevBoards => {
       const newBoards = [...prevBoards].slice(0, currentStep + 1);
-      newBoards.push(squares);
+      newBoards.push(squaresCopy);
       return newBoards;
     });
   }
@@ -87,36 +80,39 @@ function Game() {
     <div className="game">
       <div className="game-board">
         <Board
-          setSquares={setSquares}
           squares={boards[currentStep]}
-          onRestart={restart}
+          onSelect={selectSquare}
         />
         <button className="restart" onClick={restart}>
           restart
         </button>
       </div>
-      <ol className="game-info">
-        {boards.map((board, i) => {
-          let text = `Go to move #${i}`;
-          if (i === currentStep) {
-            text += ' (current)';
-          } else if (i === 0) {
-            text = 'Go to game start';
-          }
-          return (
-            <li key={board.toString()}>
-              <button
-                disabled={i === currentStep}
-                onClick={() => {
-                  setCurrentStep(i);
-                }}
-              >
-                {text}
-              </button>
-            </li>
-          );
-        })}
-      </ol>
+      <div className="game-info">
+        <div className="status">{status}</div>
+
+        <ol>
+          {boards.map((board, i) => {
+            let text = `Go to move #${i}`;
+            if (i === currentStep) {
+              text += ' (current)';
+            } else if (i === 0) {
+              text = 'Go to game start';
+            }
+            return (
+              <li key={board.toString()}>
+                <button
+                  disabled={i === currentStep}
+                  onClick={() => {
+                    setCurrentStep(i);
+                  }}
+                >
+                  {text}
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
     </div>
   );
 }
