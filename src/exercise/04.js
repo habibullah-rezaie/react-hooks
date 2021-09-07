@@ -4,12 +4,7 @@
 import * as React from 'react';
 import {useLocalStorageState} from '../utils';
 
-function Board() {
-  const [squares, setSquares] = useLocalStorageState(
-    'board',
-    Array(9).fill(null),
-  );
-
+function Board({squares, setSquares, onRestart}) {
   // - nextValue ('X' or 'O')
   const nextValue = calculateNextValue(squares);
 
@@ -29,11 +24,6 @@ function Board() {
     const squareCopy = [...squares];
     squareCopy[square] = nextValue;
     setSquares(squareCopy);
-  }
-
-  function restart() {
-    // 🐨 reset the squares
-    setSquares(Array(9).fill(null));
   }
 
   function renderSquare(i) {
@@ -63,7 +53,7 @@ function Board() {
         {renderSquare(7)}
         {renderSquare(8)}
       </div>
-      <button className="restart" onClick={restart}>
+      <button className="restart" onClick={onRestart}>
         restart
       </button>
     </div>
@@ -71,11 +61,65 @@ function Board() {
 }
 
 function Game() {
+  const [boards, setBoards] = useLocalStorageState('history', [
+    Array(9).fill(null),
+  ]);
+
+  const [currentStep, setCurrentStep] = useLocalStorageState('currentStep', 0);
+
+  /**
+   * Function to add a new board
+   * @param {Array} squares
+   */
+  function setSquares(squares) {
+    setCurrentStep(prevStep => prevStep + 1);
+    setBoards(prevBoards => {
+      const newBoards = [...prevBoards].slice(0, currentStep + 1);
+      newBoards.push(squares);
+      return newBoards;
+    });
+  }
+
+  function restart() {
+    // 🐨 reset the squares
+    setCurrentStep(0);
+    setBoards([Array(9).fill(null)]);
+  }
+
   return (
     <div className="game">
       <div className="game-board">
-        <Board />
+        <Board
+          setSquares={setSquares}
+          squares={boards[currentStep]}
+          onRestart={restart}
+        />
       </div>
+      <ol
+        className="history"
+        style={{display: 'flex', flexFlow: 'column', paddingLeft: '2rem'}}
+      >
+        {boards.map((board, i) => {
+          let text = `Go to move #${i}`;
+          if (i === currentStep) {
+            text += ' (current)';
+          } else if (i === 0) {
+            text = 'Go to game start';
+          }
+          return (
+            <li key={board.toString()}>
+              <button
+                disabled={i === currentStep}
+                onClick={() => {
+                  setCurrentStep(i);
+                }}
+              >
+                {text}
+              </button>
+            </li>
+          );
+        })}
+      </ol>
     </div>
   );
 }
