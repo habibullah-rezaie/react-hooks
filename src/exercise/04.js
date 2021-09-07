@@ -94,6 +94,9 @@ function Game() {
           squares={boards[currentStep]}
           onRestart={restart}
         />
+        <button className="restart" onClick={restart}>
+          restart
+        </button>
       </div>
       <ol
         className="history"
