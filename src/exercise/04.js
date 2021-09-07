@@ -1,35 +1,39 @@
 // useState: tic tac toe
 // http://localhost:3000/isolated/exercise/04.js
 
-import * as React from 'react'
+import * as React from 'react';
+import {useLocalStorageState} from '../utils';
 
 function Board() {
-  const [squares, setSquares] = React.useState(Array(9).fill(null))
+  const [squares, setSquares] = useLocalStorageState(
+    'board',
+    Array(9).fill(null),
+  );
 
   // - nextValue ('X' or 'O')
-  const nextValue = calculateNextValue(squares)
+  const nextValue = calculateNextValue(squares);
 
   // - winner ('X', 'O', or null)
-  const winner = calculateWinner(squares)
+  const winner = calculateWinner(squares);
 
   // - status (`Winner: ${winner}`, `Scratch: Cat's game`, or `Next player: ${nextValue}`)
-  const status = calculateStatus(winner, squares, nextValue)
+  const status = calculateStatus(winner, squares, nextValue);
 
   // This is the function your square click handler will call. `square` should
   // be an index. So if they click the center square, this will be `4`.
   function selectSquare(square) {
     if (winner || squares[square]) {
-      return
+      return;
     }
 
-    const squareCopy = [...squares]
-    squareCopy[square] = nextValue
-    setSquares(squareCopy)
+    const squareCopy = [...squares];
+    squareCopy[square] = nextValue;
+    setSquares(squareCopy);
   }
 
   function restart() {
     // 🐨 reset the squares
-    setSquares(Array(9).fill(null))
+    setSquares(Array(9).fill(null));
   }
 
   function renderSquare(i) {
@@ -37,7 +41,7 @@ function Board() {
       <button className="square" onClick={() => selectSquare(i)}>
         {squares[i]}
       </button>
-    )
+    );
   }
 
   return (
@@ -63,7 +67,7 @@ function Board() {
         restart
       </button>
     </div>
-  )
+  );
 }
 
 function Game() {
@@ -73,7 +77,7 @@ function Game() {
         <Board />
       </div>
     </div>
-  )
+  );
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -82,12 +86,12 @@ function calculateStatus(winner, squares, nextValue) {
     ? `Winner: ${winner}`
     : squares.every(Boolean)
     ? `Scratch: Cat's game`
-    : `Next player: ${nextValue}`
+    : `Next player: ${nextValue}`;
 }
 
 // eslint-disable-next-line no-unused-vars
 function calculateNextValue(squares) {
-  return squares.filter(Boolean).length % 2 === 0 ? 'X' : 'O'
+  return squares.filter(Boolean).length % 2 === 0 ? 'X' : 'O';
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -101,18 +105,18 @@ function calculateWinner(squares) {
     [2, 5, 8],
     [0, 4, 8],
     [2, 4, 6],
-  ]
+  ];
   for (let i = 0; i < lines.length; i++) {
-    const [a, b, c] = lines[i]
+    const [a, b, c] = lines[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a]
+      return squares[a];
     }
   }
-  return null
+  return null;
 }
 
 function App() {
-  return <Game />
+  return <Game />;
 }
 
-export default App
+export default App;
