@@ -4,7 +4,7 @@
 import * as React from 'react';
 import {useLocalStorageState} from '../utils';
 
-function Board({squares, setSquares, onRestart}) {
+function Board({squares, setSquares}) {
   // - nextValue ('X' or 'O')
   const nextValue = calculateNextValue(squares);
 
@@ -53,9 +53,6 @@ function Board({squares, setSquares, onRestart}) {
         {renderSquare(7)}
         {renderSquare(8)}
       </div>
-      <button className="restart" onClick={onRestart}>
-        restart
-      </button>
     </div>
   );
 }
@@ -98,10 +95,7 @@ function Game() {
           restart
         </button>
       </div>
-      <ol
-        className="history"
-        style={{display: 'flex', flexFlow: 'column', paddingLeft: '2rem'}}
-      >
+      <ol className="game-info">
         {boards.map((board, i) => {
           let text = `Go to move #${i}`;
           if (i === currentStep) {
