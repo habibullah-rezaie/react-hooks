@@ -12,7 +12,7 @@ import {
 
 function PokemonInfo({pokemonName}) {
   const [state, setState] = React.useState({
-    status: 'idle',
+    status: pokemonName ? 'pending' : 'idle',
     pokemon: null,
     error: null,
   });
@@ -47,7 +47,7 @@ function PokemonInfo({pokemonName}) {
   }
 }
 
-function ErrorFallbackView({error}) {
+function ErrorFallbackView({error, resetErrorBoundary}) {
   const imgStyle = {
     maxWidth: '100%',
     maxHeight: '200px',
@@ -59,6 +59,7 @@ function ErrorFallbackView({error}) {
     <div role="alert">
       There was an error:{' '}
       <pre style={{whiteSpace: 'normal'}}>{error.message}</pre>
+      <button onClick={resetErrorBoundary}>Try Again</button>
       <img
         style={imgStyle}
         src={'/img/pokemon/pikachu-sad.png'}
@@ -81,7 +82,10 @@ function App() {
       <PokemonForm pokemonName={pokemonName} onSubmit={handleSubmit} />
       <hr />
       <div className="pokemon-info">
-        <ErrorBoundary FallbackComponent={ErrorFallbackView} key={pokemonName}>
+        <ErrorBoundary
+          FallbackComponent={ErrorFallbackView}
+          onReset={() => setPokemonName('')}
+        >
           <PokemonInfo pokemonName={pokemonName} />
         </ErrorBoundary>
       </div>
