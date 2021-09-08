@@ -10,22 +10,44 @@ import {
 } from '../pokemon';
 
 function PokemonInfo({pokemonName}) {
-  // 🐨 Have state for the pokemon (null)
   const [pokemon, setPokemon] = React.useState(null);
+  const [error, setError] = React.useState(null);
 
   React.useEffect(() => {
+    setError(null);
+    setPokemon(null);
+
     async function effect() {
-      if (!pokemonName) return;
-
-      setPokemon(null);
-      const newPokemon = await fetchPokemon(pokemonName);
-
-      setPokemon(newPokemon);
+      try {
+        const newPokemon = await fetchPokemon(pokemonName);
+        setPokemon(newPokemon);
+      } catch (error) {
+        setError(error);
+      }
     }
 
-    effect();
+    if (pokemonName) effect();
   }, [pokemonName]);
 
+  if (error) {
+    return (
+      <div role="alert">
+        There was an error:{' '}
+        <pre style={{whiteSpace: 'normal'}}>{error.message}</pre>
+        <img
+          style={{
+            maxWidth: '100%',
+            maxHeight: '200px',
+            marginLeft: '1.75rem',
+            marginTop: '1.75rem',
+          }}
+          src={'/img/pokemon/pikachu-sad.png'}
+          alt="Sad Pikachu"
+          title="Sad Pikachu"
+        />
+      </div>
+    );
+  }
   if (!pokemonName) {
     return 'Submit a pokemon';
   } else if (!pokemon) {
