@@ -38,27 +38,50 @@ function PokemonInfo({pokemonName}) {
       return <PokemonDataView pokemon={state.pokemon} />;
 
     case 'rejected':
-      return (
-        <div role="alert">
-          There was an error:{' '}
-          <pre style={{whiteSpace: 'normal'}}>{state.error.message}</pre>
-          <img
-            style={{
-              maxWidth: '100%',
-              maxHeight: '200px',
-              marginLeft: '1.75rem',
-              marginTop: '1.75rem',
-            }}
-            src={'/img/pokemon/pikachu-sad.png'}
-            alt="Sad Pikachu"
-            title="Sad Pikachu"
-          />
-        </div>
-      );
+      throw state.error;
 
     // case: 'idle'
     default:
       return 'Submit a pokemon';
+  }
+}
+
+function ErrorFallbackView({error}) {
+  const imgStyle = {
+    maxWidth: '100%',
+    maxHeight: '200px',
+    marginLeft: '1.75rem',
+    marginTop: '1.75rem',
+  };
+
+  return (
+    <div role="alert">
+      There was an error:{' '}
+      <pre style={{whiteSpace: 'normal'}}>{error.message}</pre>
+      <img
+        style={imgStyle}
+        src={'/img/pokemon/pikachu-sad.png'}
+        alt="Sad Pikachu"
+        title="Sad Pikachu"
+      />
+    </div>
+  );
+}
+class ErrorBoundary extends React.Component {
+  state = {
+    error: null,
+  };
+
+  static getDerivedStateFromError(error) {
+    return {error};
+  }
+
+  render() {
+    if (!this.state.error) {
+      return <>{this.props.children}</>;
+    }
+
+    return <this.props.ErrorFallbackComponent error={this.state.error} />;
   }
 }
 
@@ -74,7 +97,9 @@ function App() {
       <PokemonForm pokemonName={pokemonName} onSubmit={handleSubmit} />
       <hr />
       <div className="pokemon-info">
-        <PokemonInfo pokemonName={pokemonName} />
+        <ErrorBoundary ErrorFallbackComponent={ErrorFallbackView}>
+          <PokemonInfo pokemonName={pokemonName} />
+        </ErrorBoundary>
       </div>
     </div>
   );
