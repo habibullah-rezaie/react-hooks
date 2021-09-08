@@ -12,48 +12,52 @@ import {
 function PokemonInfo({pokemonName}) {
   const [pokemon, setPokemon] = React.useState(null);
   const [error, setError] = React.useState(null);
+  const [status, setStatus] = React.useState('idle');
 
   React.useEffect(() => {
-    setError(null);
-    setPokemon(null);
+    setStatus('pending');
 
-    async function effect() {
-      try {
-        const newPokemon = await fetchPokemon(pokemonName);
-        setPokemon(newPokemon);
-      } catch (error) {
-        setError(error);
-      }
-    }
-
-    if (pokemonName) effect();
+    if (pokemonName)
+      fetchPokemon(pokemonName)
+        .then(newPokemon => {
+          setPokemon(newPokemon);
+          setStatus('resolved');
+        })
+        .catch(error => {
+          setError(error);
+          setStatus('rejected');
+        });
   }, [pokemonName]);
 
-  if (error) {
-    return (
-      <div role="alert">
-        There was an error:{' '}
-        <pre style={{whiteSpace: 'normal'}}>{error.message}</pre>
-        <img
-          style={{
-            maxWidth: '100%',
-            maxHeight: '200px',
-            marginLeft: '1.75rem',
-            marginTop: '1.75rem',
-          }}
-          src={'/img/pokemon/pikachu-sad.png'}
-          alt="Sad Pikachu"
-          title="Sad Pikachu"
-        />
-      </div>
-    );
-  }
-  if (!pokemonName) {
-    return 'Submit a pokemon';
-  } else if (!pokemon) {
-    return <PokemonInfoFallback name={pokemonName} />;
-  } else {
-    return <PokemonDataView pokemon={pokemon} />;
+  switch (status) {
+    case 'pending':
+      return <PokemonInfoFallback name={pokemonName} />;
+
+    case 'resolved':
+      return <PokemonDataView pokemon={pokemon} />;
+
+    case 'rejected':
+      return (
+        <div role="alert">
+          There was an error:{' '}
+          <pre style={{whiteSpace: 'normal'}}>{error.message}</pre>
+          <img
+            style={{
+              maxWidth: '100%',
+              maxHeight: '200px',
+              marginLeft: '1.75rem',
+              marginTop: '1.75rem',
+            }}
+            src={'/img/pokemon/pikachu-sad.png'}
+            alt="Sad Pikachu"
+            title="Sad Pikachu"
+          />
+        </div>
+      );
+
+    // case: 'idle'
+    default:
+      return 'Submit a pokemon';
   }
 }
 
